@@ -1,0 +1,90 @@
+	import java.io.*;
+import java.util.*;
+
+public class Main 
+{
+
+	public static void main(String[] args) throws FileNotFoundException
+	{
+		Instructions instructions = new Instructions();
+		Decoder decoder = new Decoder();
+		Scanner input = new Scanner(System.in);
+		PrintStream output = System.out;
+		output.print("please enter the file name : ");
+		File filename = new File(input.next());
+		Scanner fileRead = new Scanner((filename));
+		TreeMap<String, String> map = new TreeMap<String, String>();
+		LinkedList<String> instructionss =new LinkedList<String>();
+		LinkedList<String> holdMemory = new LinkedList<String>();
+		for (;fileRead.hasNext();)
+		{
+			String key = Decoder.hexToBin(fileRead.next());
+			String value = Decoder.hexToBin(fileRead.next());
+			map.put(key, value);
+			instructionss.add(value);
+			holdMemory.add(key);
+		}
+		boolean checker = instructions.getAns();
+		String destination = "";
+		for (int i = 0; i < instructionss.size(); i++)
+		{
+			checker = instructions.getAns();
+			if (checker == true)
+			{
+				i = holdMemory.indexOf(destination);
+			}
+				checker = false;
+				String memoryAddress = holdMemory.get(i);
+				String instruction = map.get(memoryAddress);
+				decoder.breakDown(instruction);
+				if (decoder.getOp().equals( "000000") && decoder.getFunct().equals("100000"))
+				{
+					instructions.add(decoder.getRd(), decoder.getRs(), decoder.getRt());
+				}
+				else if (decoder.getOp().equals( "001000"))
+				{
+					instructions.addi(decoder.getRs(), decoder.getRt(), decoder.getImmediate());
+				}
+				else if (decoder.getOp().equals ("000000") && decoder.getFunct().equals("100100"))
+				{
+					instructions.and(decoder.getRd(), decoder.getRs(), decoder.getRt());
+				}
+				else if (decoder.getOp().equals("000000") && decoder.getFunct().equals("100111"))
+				{
+					instructions.nor(decoder.getRd(), decoder.getRs(), decoder.getRt());
+				}
+				else if (decoder.getOp().equals("000000") && decoder.getFunct().equals("101010"))
+				{
+					instructions.slt(decoder.getRd(), decoder.getRs(), decoder.getRt());
+				}
+				else if (decoder.getOp().equals("000000") && decoder.getFunct().equals("101011"))
+				{
+					instructions.slt(decoder.getRd(), decoder.getRs(), decoder.getRt());
+				}
+				else if (decoder.getOp().equals("000000") && decoder.getFunct().equals("000000"))
+				{
+					instructions.sll(decoder.getRd(), decoder.getShamt(), decoder.getRt());
+				}
+				else if (decoder.getOp().equals("000000") && decoder.getFunct().equals("000010"))
+				{
+					instructions.srl(decoder.getRd(), decoder.getShamt(), decoder.getRt());
+				}
+				else if (decoder.getOp().equals("000100"))
+				{
+					destination = instructions.beq(decoder.getRs(), decoder.getRt(), memoryAddress, decoder.getImmediate());
+				}
+				else if (decoder.getOp().equals("000101"))
+				{
+					destination =  instructions.bne(decoder.getRs(), decoder.getRt(), memoryAddress, decoder.getImmediate());
+				}
+				else 
+				{
+					output.println("Illegal instruction" + " on memory address : " + (Decoder.binaryToHex(memoryAddress)));
+				}
+		}
+		input.close();
+		fileRead.close();
+		output.println(instructions.toString());
+	}
+}
+
